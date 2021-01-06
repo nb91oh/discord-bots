@@ -60,8 +60,10 @@ async def on_message(message):
     )
     try:
         response = request.execute()
-    except:
+        print(response)
+        await message.channel.send(f"youtube link added to playlist!\nhttps://www.youtube.com/playlist?list={playlist_id}")
+    except Exception as e:
+        print(e)
         await message.channel.send('link not added successfully :(')
-    await message.channel.send("youtube link added to playlist!\nhttps://www.youtube.com/playlist?list=PLYAQi7_zAOpZgG3iXyhozqYo-B4DrnVco")
 
 client.run(discord_key)
