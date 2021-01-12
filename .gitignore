@@ -1,3 +1,4 @@
 .env
 .cache-*
 yt_secrets.json
+CREDENTIALS_PICKLE

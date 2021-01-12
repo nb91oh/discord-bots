@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 import os
 import re
+import pickle
 
 import discord
 
@@ -21,9 +24,15 @@ api_service_name = "youtube"
 api_version = "v3"
 client_secrets_file = "yt_secrets.json"
 
-flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-    client_secrets_file, scopes)
-credentials = flow.run_console()
+if os.path.exists('CREDENTIALS_PICKLE'):
+    with open("CREDENTIALS_PICKLE", 'rb') as f:
+        credentials = pickle.load(f)
+else:
+    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+        client_secrets_file, scopes)
+    credentials = flow.run_console()
+    with open("CREDENTIALS_PICKLE", 'wb') as f:
+        pickle.dump(credentials, f)
 youtube = googleapiclient.discovery.build(
     api_service_name, api_version, credentials=credentials)
 
