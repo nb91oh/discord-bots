@@ -6,6 +6,9 @@ import discord
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 client = discord.Client()
 load_dotenv()
@@ -21,8 +24,7 @@ async def on_message(message):
         class_name = "tile--img__img"
         driver = webdriver.Firefox()
         driver.get(url)
-        time.sleep(10)
-        element = driver.find_element_by_class_name(class_name)
+        element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
         src = element.get_attribute('src')
         await message.channel.send(src)
         driver.close()
