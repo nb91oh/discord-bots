@@ -4,12 +4,9 @@ import aiohttp
 import os
 import random
 import re
-import asyncio
-import concurrent.futures
 import discord
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
-from TikTokApi import TikTokApi
 from playwright.async_api import async_playwright
 
 
