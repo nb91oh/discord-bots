@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python
 
 import aiohttp
 import os
@@ -43,7 +43,10 @@ async def download_tiktok(url):
 async def download_tweet(url, message):
     url = 'https://' + url
     embeds = message.embeds
-    if 'video' not in embeds[0].to_dict().keys():
+    for embed in embeds:
+        embed_dict = embed.to_dict()
+    if 'video' not in embed_dict.keys():
+        print("embed not found")
         return
     twittervideodl.download_video(url, "video")
     return
@@ -65,6 +68,8 @@ async def on_message(message):
             url_type = platform
             url = link.group(0)
             break
+    if not url:
+        return
     print("should get here!!")
     async with message.channel.typing():
         print("url found:" + url)
@@ -82,4 +87,5 @@ async def on_message(message):
     await message.channel.send(file = discord.File(fp = 'video.mp4'))
     print("sent a video")
 
+print("starting bot...")
 client.run(discord_key)
