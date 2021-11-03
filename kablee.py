@@ -1,10 +1,13 @@
 #! /usr/bin/python
-
+import aiohttp
 import os
 import re
+import sys
 import discord
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
+import ffmpeg
+import compress
 import twittervideodl
 
 
@@ -36,18 +39,17 @@ async def download_tiktok(url):
             with open('video.mp4', 'wb') as f:
                 video = await response.content.read()
                 f.write(video)
-    return
+    return True
 
-async def download_tweet(url, message):
+async def download_tweet(url):
     url = 'https://' + url
-    embeds = message.embeds
-    for embed in embeds:
-        embed_dict = embed.to_dict()
-    if 'video' not in embed_dict.keys():
-        print("embed not found")
+    try:
+        twittervideodl.download_video(url, "video")
+    except Exception as e:
+        print("no video found")
+        print(e)
         return
-    twittervideodl.download_video(url, "video")
-    return
+    return True
 
 
 @client.event
@@ -61,7 +63,6 @@ async def on_message(message):
     }
     url = None
     for platform, pattern in regex_lookup.items():
-        print(platform, pattern)
         link = re.search(pattern, text)
         if link:
             url_type = platform
@@ -69,21 +70,27 @@ async def on_message(message):
             break
     if not url:
         return
-    async with message.channel.typing():
-        print("url found:" + url)
-        if url_type == "tiktok":
-            print("downloading tiktok...")
-            await download_tiktok(url)
-        elif url_type == "twitter":
-            print("downloading tweet...")
-            await download_tweet(url, message)
-            pass
-        else:
-            print("should not hit!!")
-            return
+    print("url found:" + url)
+    if url_type == "tiktok":
+        print("downloading tiktok...")
+        download = await download_tiktok(url)
+    elif url_type == "twitter":
+        print("downloading tweet...")
+        download = await download_tweet(url)
+        pass
+    else:
+        print("should not hit!!")
+        return
 
-    await message.channel.send(file = discord.File(fp = 'video.mp4'))
-    print("sent a video")
+    if download:
+        async with message.channel.typing():
+            probe = ffmpeg.probe('video.mp4')
+            if int(probe['format']['size']) >= 8000000:
+                print("compressing video...")
+                await message.channel.send('compressing file...')
+                compress.compress()
+            await message.channel.send(file = discord.File(fp = 'video.mp4'))
+        print("sent a video")
     return
 
 print("starting bot...")
