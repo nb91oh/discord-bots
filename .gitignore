@@ -5,6 +5,7 @@ CREDENTIALS_PICKLE
 video_ids.txt
 geckodriver.log
 video.mp4
-
+*.log
+*.log.*
 
 *.pyc
