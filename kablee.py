@@ -1,8 +1,6 @@
 #! /usr/bin/python
 
-import aiohttp
 import os
-import random
 import re
 import discord
 from discord.ext.commands import Bot
@@ -61,6 +59,7 @@ async def on_message(message):
         "tiktok": "https:\/\/vm.tiktok.com/\w+",
         "twitter": "twitter.com\/\D+\/status\/\d+"
     }
+    url = None
     for platform, pattern in regex_lookup.items():
         print(platform, pattern)
         link = re.search(pattern, text)
@@ -70,7 +69,6 @@ async def on_message(message):
             break
     if not url:
         return
-    print("should get here!!")
     async with message.channel.typing():
         print("url found:" + url)
         if url_type == "tiktok":
@@ -86,6 +84,7 @@ async def on_message(message):
 
     await message.channel.send(file = discord.File(fp = 'video.mp4'))
     print("sent a video")
+    return
 
 print("starting bot...")
 client.run(discord_key)
