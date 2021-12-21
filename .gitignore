@@ -7,5 +7,6 @@ geckodriver.log
 video.mp4
 *.log
 *.log.*
-
 *.pyc
+/venv/
+
