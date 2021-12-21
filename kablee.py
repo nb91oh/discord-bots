@@ -84,11 +84,11 @@ async def on_message(message):
 
     if download:
         async with message.channel.typing():
-            probe = ffmpeg.probe('video.mp4')
-            if int(probe['format']['size']) >= 8000000:
-                print("compressing video...")
-                await message.channel.send('compressing file...')
-                compress.compress()
+#            probe = ffmpeg.probe('video.mp4')
+#            if int(probe['format']['size']) >= 8000000:
+#                print("compressing video...")
+#                await message.channel.send('compressing file...')
+#                compress.compress()
             await message.channel.send(file = discord.File(fp = 'video.mp4'))
         print("sent a video")
     return
