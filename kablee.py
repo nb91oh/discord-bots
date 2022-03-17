@@ -8,7 +8,6 @@ from discord.ext.commands import Bot
 from dotenv import load_dotenv
 import ffmpeg
 import compress
-import twittervideodl
 
 
 client = discord.Client()
