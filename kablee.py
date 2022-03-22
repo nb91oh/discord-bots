@@ -17,7 +17,10 @@ discord_key = os.getenv('image_search_key')
 
 async def download(url):
     os.system(f'youtube-dl --output \"video.mp4\" {url}')
-    return True
+    if os.path.exists('video.mp4'):
+        return True
+    else:
+        return False
 
 @client.event
 async def on_message(message):
