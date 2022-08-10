@@ -18,7 +18,7 @@ discord_key = os.getenv('image_search_key')
 async def download(url):
     if os.path.exists('video.mp4'):
         os.remove("video.mp4")
-    os.system(f'youtube-dl --output \"video.mp4\" {url}')
+    os.system(f'yt-dlp -S "vcodec:h264" --output \"video.mp4\" {url}')
     if os.path.exists('video.mp4'):
         print("video downloaded")
         return True
@@ -29,7 +29,6 @@ async def download(url):
 async def send(message):
     await message.channel.send(file = discord.File(fp = 'video.mp4'))
     print("sent a video")
-    os.remove("video.mp4")
     return
 
 
@@ -38,7 +37,8 @@ async def check_message(message):
     regex_lookup = {
         "tiktok": "https:\/\/vm.tiktok.com/\w+",
         "twitter": "twitter.com\/\D+\/status\/\d+",
-        "reddit": "https:\/\/www.reddit.com\/r\/\w+\/\w+\/\w+\/\w+"
+        "reddit": "https:\/\/www.reddit.com\/r\/\w+\/\w+\/\w+\/\w+",
+        "instagram": "https:\/\/www.instagram.com\/\w+\/\w+|\S+"
     }
     url = None
     for platform, pattern in regex_lookup.items():
