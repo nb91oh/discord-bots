@@ -35,7 +35,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope,
 async def download(url):
     if os.path.exists('video.mp4'):
         os.remove("video.mp4")
-    os.system(f'youtube-dl --output \"video.mp4\" {url}')
+    os.system(f'yt-dlp -S "vcodec:h264" --output \"video.mp4\" {url}')
     if os.path.exists('video.mp4'):
         print("video downloaded")
         return True
@@ -82,32 +82,41 @@ async def check_video():
     return True
 
 
-async def check_sp_link(content):
-    pattern = "https:\/\/open.spotify.com\/playlist\/\w+"
-    link = re.search(pattern, content)
-    if link:
-        url = link.group(0)
-        playlist_id = url.split("/")[-1]
-        print(playlist_id)
-        return playlist_id
-    else:
-        return False
+async def check_playlist_link(content):
+    regex_lookup = {
+        "spotify": "https:\/\/open.spotify.com\/playlist\/\w+",
+        "youtube": "https:\/\/music.youtube.com/playlist\?list=\w+",
+    }
+    for platform, pattern in regex_lookup.items():
+        link = re.search(pattern, content)
+        if link:
+            url = link.group(0)
+            if platform == "spotify":
+                playlist_id = url.split("/")[-1]
+            elif platform == "youtube":
+                playlist_id = url.split("=")[-1]
+            print(playlist_id)
+            return platform, playlist_id
+        else:
+            return False
 
 
-async def scrape_data(playlist_id):
-    # playlist = sp.playlist(playlist_id)
-    playlist = sp.playlist_items(playlist_id)
-    playlist_data = []
-    total_duration_ms = 0
-    for song in playlist['items']:
-        artist = song['track']['artists'][0]['name']
-        song_name = song['track']['name']
-        duration_ms = song['track']['duration_ms']
-        total_duration_ms += duration_ms
-        # duration = datetime.timedelta(milliseconds=duration_ms)
-        track = {"artist": artist, "name": song_name}
-        playlist_data.append(track)
-    return playlist_data, total_duration_ms
+async def scrape_data(platform, playlist_id):
+    if platform == "spotify":
+        try:
+            playlist = sp.playlist_items(playlist_id)
+        except:
+            print("failed to call sp.playlist_items()")
+            return
+        playlist_data = []
+        for song in playlist['items']:
+            artist = song['track']['artists'][0]['name']
+            song_name = song['track']['name']
+            track = {"artist": artist, "name": song_name}
+            playlist_data.append(track)
+        return playlist_data
+    elif platform == "youtube":
+        pass
     
 
 async def gather_youtube(playlist_data):
@@ -127,15 +136,11 @@ async def gather_youtube(playlist_data):
     return confirm_text
 
 
-async def burn_cd(reaction, user):
-    playlist_id = await check_sp_link(reaction.message.content)
+async def dl_playlist(reaction, user):
+    platform, playlist_id = await check_playlist_link(reaction.message.content)
     if not playlist_id:
         return
-    playlist_data, total_duration_ms = await scrape_data(playlist_id)
-    if total_duration_ms >= 4800000:
-        await reaction.message.chanel.send("Playlist length over 80 minutes!!")
-        await reaction.message.channel.send("no playlist burned...")
-        return 
+    playlist_data = await scrape_data(platform, playlist_id)
     confirm_text = await gather_youtube(playlist_data)
     await reaction.message.channel.send(f"Check the below playlist...\n\n{confirm_text}")
 
@@ -160,7 +165,7 @@ async def on_reaction_add(reaction, user):
         await send(reaction.message)
         return 
     elif str(reaction).split(":")[1] == "burn":
-            await burn_cd(reaction, user)
+            await dl_playlist(reaction, user)
     else:
         return
 
